@@ -130,6 +130,9 @@ latents = nar_synthesize(model, prefix, ref_tokens + new_tokens, seed)
   full temporal coverageに広げる時点で**メモリ設計が別物になる**
 - 必要な対策: gradient checkpointing、`song_chunks()` と同じチャンク境界での学習、
   潜在の事前キャッシュ(ai-toolkitも「潜在キャッシュ必須」と明記)
+- **補足(後続調査)**: この節は「曲全体を1系列で回す」前提での見積り。NARはフローマッチング
+  なので**20秒窓 + gradient checkpointing なら約12 GiB**で足り、80GB級は不要になる。
+  具体的な数値は [lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) §3.1〜3.3 を参照
 
 ### 6.2 再現性の作り込みを壊さないこと
 

@@ -24,6 +24,9 @@
 | 独自実装に意味はあるか | **ある**。ただし性質は「既存機能の改善」ではなく**未完成部分の実装** |
 | 予算内で収まるか | **収まる**($430〜1,010の計画。§ [custom-training-plan](custom-training-plan.md)) |
 | 日本語は対応しているか | **している**(公式デモに日本語ボーカル曲あり)。ただし**日本語PERは誰も測っていない** |
+| どこに何パラメータのLoRAを差すか | NAR branch(全体の39.4% = 1.409B)に **r=32 / 34.87M / bf16 69.7MB**。§ [lora-architecture-and-data-scale](lora-architecture-and-data-scale.md) |
+| 必要なデータ量は | 対象話者のクリーンなボーカル **30〜60分・5〜10曲**(最低ライン10分)。コミュニティの実効77〜330秒はこの1/8〜1/5 |
+| 1回の学習にかかる時間と費用は | 20秒窓・3,000ステップで **H100 約20分・$1未満**。費用は試行回数で決まり、声質到達まで **$110〜420** |
 
 **到達目標の設定**: 「本人と聞き間違える」ではなく「**声質の傾向と歌い回しが一致し、同一シリーズと認識できる**」レベルに置くべき。
 YuE2単独縛りは、現在の公開知見では**未解決問題への挑戦**である。
@@ -36,9 +39,11 @@ YuE2単独縛りは、現在の公開知見では**未解決問題への挑戦**
 | [community-implementations.md](community-implementations.md) | コミュニティ実装4系統の詳細、実測値と指標の読み方 |
 | [japanese-support.md](japanese-support.md) | 日本語対応の現状、空白地帯、評価ハーネス設計 |
 | [custom-training-plan.md](custom-training-plan.md) | 独自実装の判断、フェーズ計画、予算、ライセンス |
+| [lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) | **LoRAの差し込み先とパラメータ数、学習規模、必要データ量、判断ゲート** |
 
 ## 動作・学習環境の前提
 
 - 推論: Linux / Python 3.12 / BF16対応NVIDIA **24GB**(README記載)
-- 学習: **80GB級(A100 80GB / H100)が実質必須**。理由は [custom-training-plan.md](custom-training-plan.md) のエンジニアリング注意を参照
+- 学習: 長窓・勾配チェックポイント無しなら **80GB級(A100 80GB / H100)が必須**([custom-training-plan.md](custom-training-plan.md) §6.1)。
+  ただし **20秒窓 + 勾配チェックポイントなら約12 GiB** で足りる([lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) §3.2)
 - 調査時の作業機は macOS(darwin)であり、ローカルでの学習・推論はいずれも不可
