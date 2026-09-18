@@ -280,4 +280,4 @@ NAR decoderはより大きく動かす(mel 0.923 / envelope 0.541)。
 - YuE2の重みは **CC BY-NC 4.0** → **そこから学習したLoRA/アダプタは派生物であり、同じ非商用条件が適用される**。
   調査した実装はいずれもこの点を明記している。
 - 各実装のコード自体は別ライセンス(ComfyUI-YuE2-Trainerは **MIT**)。
-- 詳細と個人利用での扱いは [custom-training-plan.md](custom-training-plan.md) §7。
+- 詳細と個人利用での扱いは [custom-training-plan.md](custom-training-plan.md) §8。

@@ -3,6 +3,27 @@
 前提: **YuE2単独で完結**(後段の歌声変換を使わない)/ 予算 **$500〜1000** / **個人利用** / 日本語対応も狙う。
 調査日 2026-09-18。
 
+> **⚠ §5 のフェーズ計画と予算は [implementation-milestones.md](implementation-milestones.md) の
+> M0〜M6 に置き換わっています。** 本文書は「独自実装に意味があるか」の**投資判断の根拠**として残し、
+> 実行計画はマイルストーン文書を参照してください。置き換わった理由は2つ:
+>
+> 1. 対象話者データが **4〜6曲・約10分で固定**と判明し、設計方針が変わった
+>    ([lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) §4.7)
+> 2. **ローカルの RTX 4090(24GB)を主環境**にしたため、総額が $430〜1,010 → **$90〜470** に下がった
+>    ([implementation-milestones.md](implementation-milestones.md) の実行環境節)
+>
+> ### 旧フェーズ名 → 現マイルストーンの対応
+>
+> | 本文書 (§5) | [lora-...-data-scale.md](lora-architecture-and-data-scale.md) §5.2 | [implementation-milestones.md](implementation-milestones.md) |
+> |---|---|---|
+> | Phase 0(評価ハーネス) | G0 | **M0** |
+> | Phase 0.5(参照音声ICL注入) | G0.5 | **M2** |
+> | Phase 1(tokenizer head round-trip) | G0.5 に統合 | **M2** の完了条件2 |
+> | Phase 2(NAR注入アダプタ学習) | A | **M3** |
+> | Phase 4(per-voice 微調整) | B | **M4** |
+> | Phase 3(日本語 diction) | C | **M6** |
+> | —(新設) | — | **M1** 学習基盤の実装 / **M5** operating envelope の実測 |
+
 ## 1. 結論
 
 **「コミュニティ実装をなぞる」だけでは目標に到達しない。一方で独自実装に意味がある領域が3つ明確に存在する。**
@@ -95,7 +116,11 @@ latents = nar_synthesize(model, prefix, ref_tokens + new_tokens, seed)
 - **なぜ先にやるか**: **$0〜50でどちらかに転ぶ**。効けばPhase 2の大半が不要、
   効かなければ「NARに口を作る」方針が実測で裏付けられる
 
-## 5. フェーズ計画と予算
+## 5. フェーズ計画と予算(置き換え済み — 履歴として保持)
+
+**この節は [implementation-milestones.md](implementation-milestones.md) の M0〜M6 に置き換わっています。**
+GPU欄の「1×H100 80GB」「1×A100」は長窓設計前提の見積りで、
+短窓設計ではローカル RTX 4090(24GB)で足ります(§6.1 の補足)。
 
 | Phase | 内容 | GPU | 費用目安 |
 |---|---|---|---:|
@@ -105,7 +130,8 @@ latents = nar_synthesize(model, prefix, ref_tokens + new_tokens, seed)
 | **2** | **本命**: NAR zero-init 注入アダプタを cross-segment ペアで自己教師あり学習(§3) | 1×H100 80GB 50〜100h | **$150〜350** |
 | **3** | 日本語 diction AR LoRA(**full temporal coverage** 実装 + 日本語モーラアライメント) | 1×H100 50〜100h | **$150〜300** |
 | **4** | 対象話者の per-voice 微調整 + アブレーション(タグ有無・ジャンル一致・複数シード) | 1×A100 50〜100h | **$100〜200** |
-| | **合計** | | **$430〜1,010** |
+| | **合計(旧見積り)** | | **$430〜1,010** |
+| | **現行見積り(M0〜M6)** | ローカル4090 + M5のみクラウド | **$90〜470** |
 
 **価格前提**(2026年9月時点の調査):
 
@@ -133,6 +159,13 @@ latents = nar_synthesize(model, prefix, ref_tokens + new_tokens, seed)
 - **補足(後続調査)**: この節は「曲全体を1系列で回す」前提での見積り。NARはフローマッチング
   なので**20秒窓 + gradient checkpointing なら約12 GiB**で足り、80GB級は不要になる。
   具体的な数値は [lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) §3.1〜3.3 を参照
+- **補足2(環境の確定)**: 短窓設計なら **ローカルの RTX 4090(24GB)で学習・推論とも走る**。
+  学習は S=1,000 × batch 16 で 11.72 GiB、推論は CFG 2分岐・context上限でも 11.92 GiB。
+  [implementation-milestones.md](implementation-milestones.md) の実行環境節を参照
+- **補足3(密maskは不要)**: `nar.py` の `CachedNAR` は密 attention mask を作らず、
+  AR を causal で prefill して K/V をキャッシュし、NAR クエリを `cat(ar_k, nar_k)` に対して
+  マスクなし全結合 attention で解くことで、ハイブリッドマスクと等価な結果を得ている。
+  学習ループもこの構造を写すべき
 
 ### 6.2 再現性の作り込みを壊さないこと
 
@@ -158,12 +191,14 @@ latents = nar_synthesize(model, prefix, ref_tokens + new_tokens, seed)
 - 到達目標を「**本人と聞き間違える**」ではなく
   「**声質の傾向と歌い回しが一致し、聴き手が同一シリーズと認識できる**」に置く
 - 現行公開知見の最良値が stock 0.852〜0.888 / adapter 0.846〜0.885 である以上、
-  **Phase 2が空振りする確率は実在する**
-- **ゲート設計**: Phase 0.5 と Phase 1 の結果を中断判断に使う。
-  特に Phase 1 の round-trip(対象話者の音源 → semantic token → NAR再生成)が
+  **Phase 2(現 M3)が空振りする確率は実在する**
+- **ゲート設計**: Phase 0.5 / Phase 1(現 **M2**)の結果を中断判断に使う。
+  特に round-trip(対象話者の音源 → semantic token → NAR再生成)が
   聴感で破綻するなら、その上に載る学習はすべて土台を欠く
-- **保険**: Phase 0(表記実験・評価ハーネス)と Phase 3(日本語 diction)は
+- **保険**: Phase 0(現 **M0**、表記実験・評価ハーネス)と Phase 3(現 **M6**、日本語 diction)は
   **話者同一性が達成できなくても独立して価値が残る**成果物。
+- **現行の撤退条件**は各マイルストーンに定量条件付きで記載されている
+  ([implementation-milestones.md](implementation-milestones.md))。
   日本語対応の改善は話者クローンより成功確率が高く、予算内で確実にリターンが出る投資
 
 ## 8. ライセンス(個人利用での結論)

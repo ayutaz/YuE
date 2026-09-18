@@ -94,12 +94,13 @@ M0〜M6 の各マイルストーンに目的・ゴール・完了条件・撤退
 | アーキテクチャ的に可能か | **可能**。MoTでAR/NARの重みが層ごとに分離。ただし音色はNAR側にしか入らない |
 | 既存実装をそのまま使えば達成できるか | **✗**。MERT identity で stock 0.852 > adapter 0.846/0.847 |
 | 独自実装に意味はあるか | **ある**。ただし性質は「既存機能の改善」ではなく**未完成部分の実装** |
-| 予算内で収まるか | **収まる**($430〜1,010の計画。§ [custom-training-plan](custom-training-plan.md)) |
+| 予算内で収まるか | **大きく余裕がある**。ローカルRTX 4090を主環境にしたことで **$90〜470**(M0〜M6)。§ [implementation-milestones](implementation-milestones.md) |
 | 日本語は対応しているか | **している**(公式デモに日本語ボーカル曲あり)。ただし**日本語PERは誰も測っていない** |
-| どこに何パラメータのLoRAを差すか | NAR branch(全体の39.4% = 1.409B)に **r=32 / 34.87M / bf16 69.7MB**。§ [lora-architecture-and-data-scale](lora-architecture-and-data-scale.md) |
+| どこに何パラメータのLoRAを差すか | NAR branch(全体の39.4% = 1.409B)。一般論は r=32 / 34.87M / bf16 69.7MB だが、**10分固定の本プロジェクトでは注入0.53M + LoRA r=8/MLPのみ/14層 = 計3.28M**。§ [lora-architecture-and-data-scale](lora-architecture-and-data-scale.md) §2.3 / §4.7.3 |
 | 必要なデータ量は(一般論) | 対象話者のクリーンなボーカル **30〜60分・5〜10曲**(最低ライン10分)。コミュニティの実効77〜330秒はこの1/8〜1/5 |
 | **手持ち10分で足りるか** | **条件付きで足りる。** ただし10分を学習データではなく**条件入力**として使い、注入経路の機構は**他話者データ(jaCappella等)で学習**する方針に変える。容量は計3.28Mまで絞る。§ [lora-architecture-and-data-scale](lora-architecture-and-data-scale.md) §4.7 |
-| 1回の学習にかかる時間と費用は | 20秒窓・3,000ステップで **H100 約20分・$1未満**。費用は試行回数で決まり、声質到達まで **$110〜420** |
+| 1回の学習にかかる時間と費用は | 3,000ステップが **H100 約20分 / ローカルRTX 4090 約1〜3時間**。試行回数の大半をローカルに寄せられるので**実費はほぼ消える** |
+| どこで動かすか | **主環境はローカルの Windows + RTX 4090(24GB)**。学習 11.72 GiB / 推論 11.92 GiB で収まる。README の「Linux」要件はサポート構成の宣言で、POSIX依存は `fast`(vLLM)パスのみ。WSL2 推奨(**未検証**、M0 の冒頭で確認する) |
 
 **到達目標の設定**: 「本人と聞き間違える」ではなく「**声質の傾向と歌い回しが一致し、同一シリーズと認識できる**」レベルに置くべき。
 さらに10分固定という実条件では「**訓練曲に近い音域・テンポ・ジャンルの範囲内でなら寄る**」という条件付きの達成に再定義する。
@@ -112,7 +113,7 @@ YuE2単独縛りは、現在の公開知見では**未解決問題への挑戦**
 | [yue2-voice-cloning-feasibility.md](yue2-voice-cloning-feasibility.md) | 公式リポジトリの実測、アーキテクチャ、参照音声を渡せるか |
 | [community-implementations.md](community-implementations.md) | コミュニティ実装4系統の詳細、実測値と指標の読み方 |
 | [japanese-support.md](japanese-support.md) | 日本語対応の現状、空白地帯、評価ハーネス設計 |
-| [custom-training-plan.md](custom-training-plan.md) | 独自実装の判断、フェーズ計画、予算、ライセンス |
+| [custom-training-plan.md](custom-training-plan.md) | 独自実装の投資判断の根拠、ライセンス。**§5のフェーズ計画は implementation-milestones.md に置き換え済み**(旧称対応表あり) |
 | [lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) | **LoRAの差し込み先とパラメータ数、学習規模、必要データ量、判断ゲート、達成条件(§6)。§4.7 / §5.2 が10分固定での設計** |
 | [implementation-milestones.md](implementation-milestones.md) | **実行計画。M0〜M6 の各マイルストーンに目的・ゴール・完了条件・撤退条件・コスト** |
 

@@ -139,7 +139,12 @@ PER測定の注意(`skills/yue2-music/references/listening-and-evaluation.md:94`
 | 1 | 日本語4表記のPER比較(学習不要) | **$0** | ◎ 運用ルールとして即使える |
 | 2 | 日本語PER評価ハーネス(ASR 4パス + 話者類似度) | **$0**(ローカル) | ◎ 以降の全実験の土台 |
 | 3 | 日本語モーラ単位の歌詞アライメント段 | 実装工数のみ | ◎ 学習パイプラインの前提 |
-| 4 | 日本語 diction AR LoRA(full temporal coverage実装で) | $150〜300 | ◎ 話者同一性と独立 |
-| 5 | tokenizer head の日本語音源への適応(`joint.py` 相当) | $30〜80 | ○ 話者学習の土台 |
+| 4 | 日本語 diction AR LoRA(full temporal coverage実装で) | $0〜200 | ◎ 話者同一性と独立 |
+| 5 | tokenizer head の日本語音源への適応(`joint.py` 相当) | $0〜80 | ○ 話者学習の土台 |
 
-→ フェーズ計画への組み込みは [custom-training-plan.md](custom-training-plan.md) §5。
+コストは**ローカルの RTX 4090(24GB)で回せる分を $0 として更新済み**
+([implementation-milestones.md](implementation-milestones.md) の実行環境節)。
+
+→ 実行計画への組み込みは [implementation-milestones.md](implementation-milestones.md) の **M6**
+(項目1〜2は **M0** に含まれる)。旧 [custom-training-plan.md](custom-training-plan.md) §5 の
+Phase 3 が M6 に相当する。

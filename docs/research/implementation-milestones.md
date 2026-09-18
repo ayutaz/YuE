@@ -29,6 +29,21 @@ M3 でバッチを上げたい場合だけ。詳細は次節。
 - M1 は費用が小さいが**工数が最大**。ここが全体の律速。
 - M6 は副目標なので、M5 までの結果と残予算を見て着手を判断する。
 
+### 旧フェーズ名・ゲート名との対応
+
+調査の過程で3つの命名が生まれているので対応を明示する。**現行の正は M0〜M6**。
+
+| [custom-training-plan.md](custom-training-plan.md) §5(最初期) | [lora-...-data-scale.md](lora-architecture-and-data-scale.md) §5.2 | 本文書 |
+|---|---|---|
+| Phase 0(評価ハーネス) | G0 | **M0** |
+| Phase 0.5(参照音声ICL注入) | G0.5 | **M2** |
+| Phase 1(tokenizer head round-trip) | G0.5 に統合 | **M2** の完了条件2 |
+| Phase 2(NAR注入アダプタ学習) | A | **M3** |
+| Phase 4(per-voice 微調整) | B | **M4** |
+| Phase 3(日本語 diction) | C | **M6** |
+| —(新設) | — | **M1** 学習基盤の実装 |
+| —(新設) | — | **M5** operating envelope の実測 |
+
 ### 依存関係
 
 ```

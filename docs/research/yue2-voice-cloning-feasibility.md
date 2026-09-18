@@ -158,7 +158,8 @@ audio = pipe.decode(latents)
 - ただし **YuE v1 には dual-track ICL があった**(分離したvocal/accompanimentをトークンレベルでインターリーブし、
   20〜40秒のセグメントをランダムサンプリングして前置して**学習**していた)。公式も当時「ICLがLoRAに最も近い」と案内していた。
   YuE2ではAPIから消えており、**YuE2が codec-prefix ICL で学習されたかは非公開**。
-  → ここが唯一の未知であり、$0〜50で決着する実験になる(Phase 0.5)。
+  → ここが唯一の未知であり、**ローカル4090なら$0で決着する実験**になる
+  ([implementation-milestones.md](implementation-milestones.md) の **M2**。旧称 Phase 0.5 / G0.5)。
 
 ## 5. 公式に欠けているピースと公式の立場
 
