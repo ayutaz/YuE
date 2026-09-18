@@ -43,6 +43,23 @@ G0.5(参照音声ICL注入)が想定以上に効いた場合のみ再検討す�
 「8分」と「`abc`で旋律拘束できること」だけ、[実測]はジャンル一致とサンプリング設定だけで、
 残りは [推定]。YuE2単体で特定話者の声を寄せた実証は公式にもコミュニティにも存在しない。
 
+### 実行計画
+
+M0〜M6 の各マイルストーンに目的・ゴール・完了条件・撤退条件を付けたものが
+[implementation-milestones.md](implementation-milestones.md)。
+
+| # | マイルストーン | コスト | 累計 |
+|---|---|---:|---:|
+| **M0** | 評価ハーネスとデータ棚卸し | **$0** | $0 |
+| **M1** | 学習基盤の実装(**工数の律速**) | $30〜80 | $30〜80 |
+| **M2** | 参照音声ICL注入の偵察 | $0〜50 | $30〜130 |
+| **M3** | 注入経路の機構学習(他話者データ) | $80〜250 | $110〜380 |
+| **M4** | 対象話者への適合 | $20〜60 | $130〜440 |
+| **M5** | operating envelope の実測と model card | $40〜120 | **$170〜560** |
+| **M6** | 日本語ディクション改善(副目標) | $150〜300 | **$320〜860** |
+
+**次に着手するのは M0($0)。** M0 と M2 の結果が、M3 以降の設計と難易度を決める。
+
 ### まだ決まっていないこと
 
 | # | 論点 | 影響 |
@@ -92,7 +109,8 @@ YuE2単独縛りは、現在の公開知見では**未解決問題への挑戦**
 | [community-implementations.md](community-implementations.md) | コミュニティ実装4系統の詳細、実測値と指標の読み方 |
 | [japanese-support.md](japanese-support.md) | 日本語対応の現状、空白地帯、評価ハーネス設計 |
 | [custom-training-plan.md](custom-training-plan.md) | 独自実装の判断、フェーズ計画、予算、ライセンス |
-| [lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) | **LoRAの差し込み先とパラメータ数、学習規模、必要データ量、判断ゲート。§4.7 / §5.2 が10分固定での実行計画** |
+| [lora-architecture-and-data-scale.md](lora-architecture-and-data-scale.md) | **LoRAの差し込み先とパラメータ数、学習規模、必要データ量、判断ゲート、達成条件(§6)。§4.7 / §5.2 が10分固定での設計** |
+| [implementation-milestones.md](implementation-milestones.md) | **実行計画。M0〜M6 の各マイルストーンに目的・ゴール・完了条件・撤退条件・コスト** |
 
 ## 動作・学習環境の前提
 
