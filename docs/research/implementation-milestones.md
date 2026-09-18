@@ -140,6 +140,48 @@ M0 / M1 / M2 / M4 はローカルで完結できる。ここが試行回数の�
 | ネイティブ Windows | 基本パスは動く見込みだが未検証領域。vLLM は使えない |
 | クラウド Linux | 下記3ケースに限定 |
 
+### Python の実行は uv 経由に統一する
+
+**このプロジェクトでは `python` / `pip` を直接叩かず、すべて `uv` 経由で実行する。**
+環境差(Windows / WSL2 / クラウドLinux / 調査用の macOS)をまたぐので、
+インタプリタと依存の解決を uv に寄せて再現性を確保する。成果物が学習コードである以上、
+**他環境で同じコマンドが動くことが要件**(§0.1 の再現性)。
+
+セットアップ(リポジトリ直下):
+
+```bash
+# Python 3.12 を uv に用意させる(README の要件に合わせる)
+uv venv --python 3.12
+
+# 依存をインストール。--torch-backend=auto で GPU に合った torch を uv が選ぶ
+uv pip install --torch-backend=auto -e .
+
+# テスト用の追加依存が必要なとき
+uv pip install -e '.[test]'
+```
+
+実行:
+
+```bash
+# 生成(M0 の動作確認)
+uv run python examples/generate.py --output outputs/first-song
+
+# テスト
+uv run pytest
+
+# 自作スクリプト(M0 の計測、M1 の学習ループなど)
+uv run python tools/<script>.py
+```
+
+注意点:
+
+| 項目 | 内容 |
+|---|---|
+| `uv venv` + `uv pip install` を使う理由 | `uv sync` はリポジトリ直下に `uv.lock` を生成する。本リポジトリは upstream のフォークなので、**ロックファイルを増やさない**この組み合わせを既定にする。ロックしたい場合は `uv.lock` の扱いを決めてから `uv sync` に移る |
+| `--torch-backend=auto` | uv 0.9.5 で利用可能(`cpu` / `cu118`〜`cu130` / `auto`)。RTX 4090 は sm_89 なので CUDA ビルドが必要。`auto` はドライバから判定する |
+| `fast`(vLLM)extra | `uv pip install -e '.[fast]'`。**Windows では入らない**(vLLM に Windows wheel が無く、`fast.py` も POSIX 専用)。WSL2 かクラウド Linux でのみ |
+| 検証状況 | 上記コマンド列は **Windows / WSL2 では未実行**。M0 の冒頭で `uv run python examples/generate.py` を1回通すことが最初の確認になる |
+
 ### クラウドを使う3ケース
 
 | # | 場面 | 理由 |
@@ -512,7 +554,7 @@ M6 の日本語 AR LoRA に回すのが効率的。
 
 | # | 前提 | 検証方法 | 外れた場合 |
 |---|---|---|---|
-| 1 | **Windows / WSL2 で YuE2 が動く** | M0 の最初に `python examples/generate.py` を1回走らせる | ネイティブWindowsが駄目ならWSL2、WSL2も駄目ならクラウドLinuxに全面移行($320〜860の当初見積りに戻る) |
+| 1 | **Windows / WSL2 で YuE2 が動く** | M0 の最初に `uv run python examples/generate.py` を1回走らせる | ネイティブWindowsが駄目ならWSL2、WSL2も駄目ならクラウドLinuxに全面移行($320〜860の当初見積りに戻る) |
 | 2 | 学習時VRAMの推定値(S=1,000×bs16 で 11.72 GiB) | M1 で実測(完了条件2) | バッチを半分に落とす。S=1,000×bs8 なら 9.31 GiB |
 | 3 | 4090 の MFU 30〜40% | M1 の最初のランで s/step を実測 | 遅ければ step 数を減らすか FP8 を検討(4090 は sm_89 で対象。ただし CUDA Graph が無効化される) |
 | 4 | jaCappella の曲数・総時間 | M3 の着手時にダウンロードして実測 | 小規模なら他の多話者ソースを追加 |

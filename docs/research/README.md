@@ -127,3 +127,7 @@ YuE2単独縛りは、現在の公開知見では**未解決問題への挑戦**
   WSL2 推奨。README の「Linux」要件はサポート構成の宣言で、
   コードレベルの POSIX 依存は `fast`(vLLM)パスのみ(`fast.py:215`/`:220`/`:236`)
 - 調査に使った作業機は macOS(darwin)なので、そこでは学習・推論いずれも不可
+- **Python は `uv` 経由で実行する**(`python` / `pip` を直接叩かない)。
+  `uv venv --python 3.12` → `uv pip install --torch-backend=auto -e .` → `uv run python ...`。
+  環境が Windows / WSL2 / クラウドLinux / macOS をまたぐため、インタプリタと依存の解決を uv に寄せる。
+  詳細は [implementation-milestones.md](implementation-milestones.md) の実行環境節
